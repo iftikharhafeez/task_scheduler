@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  TODO_FUNCTIONNAME
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist
+      Handler: index.handler
+      Runtime: nodejs18.x
+      FunctionName: ...............................
+      Environment:
+        Variables:
+          ENVIRONMENT: staging
+          IS_SECRET_REMOTE: true
+          IS_CONFIG_REMOTE: false
+          SECRET_SOME_SECRET: /path/to/secrets.............................
+      Events:
+        TODO_REPLACE_TestEvent:
+          Type: Api
+          Properties:
+            Path: /test
+            Method: POST
+            RestApiId:
+              Ref: TODO_GATEWAYNAME
+      VpcConfig:
+        SecurityGroupIds: [.............................]
+        SubnetIds: [.............................]
+    Metadata:
+      SamResourceId: TODO_FUNCTIONNAME
+
+  TODO_GATEWAYNAME:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: staging
+      EndpointConfiguration:
+        Type: REGIONAL
+    Metadata:
+      SamResourceId: TODO_GATEWAYNAME

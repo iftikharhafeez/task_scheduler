@@ -1,0 +1,40 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "target": "es2017",
+    "lib": ["es2017", "esnext.asynciterable"],
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node16",
+    "module": "NodeNext",
+    "pretty": true,
+    "sourceMap": true,
+    "declaration": true,
+    "outDir": "dist",
+    "allowJs": true,
+    "noEmit": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "importHelpers": true,
+    "rootDir": "./",
+    "baseUrl": "./",
+    "paths": {
+      "@/*.ts": ["*.ts"],
+      "@constants/*": ["constants/*"],
+      "@customTypes/*": ["types/*"],
+      "@services/*": ["services/*"],
+      "@utils/*": ["utils/*"]
+    },
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts", "**/*.json", "**/*.mjs", "**/*.js"],
+  "exclude": [
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*",
+    "./node_modules/@types/node/index.d.ts",
+    "dist"
+  ]
+}

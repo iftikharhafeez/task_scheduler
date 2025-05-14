@@ -1,0 +1,25 @@
+query GetOrganization($organizationId: Int!) {
+    locating {
+        organization(id: $organizationId) {
+            ...OrganizationFragment
+        }
+    }
+}
+
+fragment OrganizationFragment on Organization {
+    id
+    name
+    image
+    sites {
+        id
+        name
+        departments(filter: false) {
+            id
+            name
+        }
+    }
+
+    termsOfServiceUrl
+    privacyPolicyUrl
+    createdAt
+}
