@@ -161,12 +161,12 @@ app.get('/health', async (req, res) => {
 
 ## 🧼 Environment Variables
 
-| Variable           | Usage                          | Required for |
-|--------------------|--------------------------------|--------------|
-| `TASK_TABLE_NAME`  | Name of the DynamoDB table     | ALL          |
-| `AWS_REGION`       | AWS region (default: `us-east-1`) | AWS / Local |
-| `IS_OFFLINE`       | Set to `true` for local testing | Local only   |
-| `EXECUTE_TASK_FUNCTION` | ARN or name of executor lambda | Scheduler Lambda |
+| Variable                | Usage                                | Required for     |
+|-------------------------|--------------------------------------|------------------|
+| `TASK_TABLE_NAME`       | Name of the DynamoDB table           | ALL              |
+| `AWS_REGION`            | AWS region (default: `ca-central-1`) | AWS / Local      |
+| `IS_OFFLINE`            | Set to `true` for local testing      | Local only       |
+| `EXECUTE_TASK_FUNCTION` | ARN or name of executor lambda       | Scheduler Lambda |
 
 ---
 
