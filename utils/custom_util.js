@@ -1,7 +1,8 @@
 import _ from 'lodash';
+import querystring from 'querystring';
+
 import Joi from '@hapi/joi';
 import Wreck from '@hapi/wreck';
-import querystring from 'querystring';
 
 async function executeNetworkRequest(baseUrl, endpoint, { query, body }, method, headers = {}) {
   const options = {
@@ -33,20 +34,6 @@ function isEmail(string) {
   return _.isNil(Joi.string().email().validate(string).error);
 }
 
-function getScopeToken(organizationId, siteId, departmentId, status) {
-  let scope = {
-      organizationId,
-      siteId,
-      departmentId
-  };
-
-  scope = _.omitBy(scope, (value, key) => _.isNil(value));
-
-  if (status === 'admin' || status === 'regular') _.assign(scope, { status });
-
-  return Buffer.from(JSON.stringify(scope)).toString('base64');
-}
-
 function lowerize(obj) {
   return Object.keys(obj).reduce((acc, k) => {
     acc[k.toLowerCase()] = obj[k];
@@ -67,7 +54,6 @@ export default{
   executeNetworkRequest,
   decodeBase64,
   isEmail,
-  getScopeToken,
   lowerize,
   isJSON,
 };

@@ -1,39 +1,53 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+Description: Serverless Task Scheduler (Layered Architecture)
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        TASK_TABLE_NAME: TaskTable
 
 Resources:
-  TODO_FUNCTIONNAME
+  TaskTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TaskTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: task_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: task_id
+          KeyType: HASH
+
+  ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./dist
-      Handler: index.handler
-      Runtime: nodejs18.x
-      FunctionName: ...............................
-      Environment:
-        Variables:
-          ENVIRONMENT: staging
-          IS_SECRET_REMOTE: true
-          IS_CONFIG_REMOTE: false
-          SECRET_SOME_SECRET: /path/to/secrets.............................
+      Handler: index.api
       Events:
-        TODO_REPLACE_TestEvent:
+        ScheduleTaskApi:
           Type: Api
           Properties:
-            Path: /test
-            Method: POST
-            RestApiId:
-              Ref: TODO_GATEWAYNAME
-      VpcConfig:
-        SecurityGroupIds: [.............................]
-        SubnetIds: [.............................]
-    Metadata:
-      SamResourceId: TODO_FUNCTIONNAME
+            Path: /schedule-task
+            Method: post
 
-  TODO_GATEWAYNAME:
-    Type: AWS::Serverless::Api
+  SchedulerFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      StageName: staging
-      EndpointConfiguration:
-        Type: REGIONAL
-    Metadata:
-      SamResourceId: TODO_GATEWAYNAME
+      Handler: index.scheduler
+      Events:
+        SchedulerRule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 minute)
+      Environment:
+        Variables:
+          EXECUTE_TASK_FUNCTION: !Ref ExecutorFunction
+
+  ExecutorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.executor

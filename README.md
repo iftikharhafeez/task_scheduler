@@ -1,122 +1,218 @@
-# node_lambda_function_template
+# 🗓️ Serverless Task Scheduler (Node.js + AWS SAM)
 
-## Folder and File Structure
+A simple and scalable serverless task scheduler using AWS Lambda, DynamoDB, and EventBridge. Supports scheduling HTTP/webhook actions to be executed at specific times.
 
-### Dealing with Secrets
+---
 
-1. All Secrets are handled by `secretFactory`
-2. Getting secrets from AWS Secrets Manager into the Lambda Function can be done as follows:
-   1. Name your secrets with the `SECRET_` prefix as an environment variable
-   2. Add the path of the AWS Secret Manager as the value of the environment variable
-   3. Get the secret via the `secretFactory.get("SECRET_YOUR_SECRET")` call
+## 📁 Folder & File Structure
 
-### API Routing
+```
+.
+├── bootstrap/               # App initialization (logger, AWS clients, db)
+├── handlers/               # Lambda entrypoints (API, scheduler, executor)
+├── lib/                    # Logger, AWS SDK clients
+├── models/                 # DynamoDB models
+├── services/               # Business logic
+├── index.js                # Single unified Lambda entrypoint
+├── start.js                # Local dev/testing entrypoint (Express server)
+├── scripts/createTable.sh  # Script to bootstrap local DynamoDB table
+├── docker-compose.yml      # Runs DynamoDB Local
+├── template.yaml           # AWS SAM template
+└── package.json
+```
 
-1. API Routing is handled by `index.mjs`
-2. API logic should be in there own function
+---
 
-### Error Handling
+## 🧠 Architecture Overview
 
-1. There is a top-level error handler in `index.mjs`, Therefore, let the error bubble up to the top-level error handler
-2. API routes should throw errors with the `throw new Error("Error Message")` syntax
+- **API Gateway + Lambda**: Accepts `/schedule-task` requests
+- **DynamoDB**: Persists scheduled tasks
+- **EventBridge**: Triggers Scheduler every 1 minute
+- **Scheduler Lambda**: Finds due tasks and invokes executor
+- **Executor Lambda**: Performs webhook POST
+- **Local Mode**: Runs everything locally with DynamoDB Local + Express
 
-## Installation Guide
+---
 
-### Install Docker
+## 🧰 Installation Guide
+
+### ✅ Prerequisites
+
+- [Node.js v18+](https://nodejs.org/) (use `nvm install 18`)
+- [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+### 📦 Install dependencies
 
 ```bash
-brew install --cask docker
+npm install
 ```
 
-### Install AWS SAM CLI
+---
+
+## 🚀 Running Locally
+
+### 🔁 Option 1: Full Local Mode with DynamoDB Local
+
+#### 1. Start DynamoDB Local
 
 ```bash
-brew tap aws/tap
-brew install aws-sam-cli
+npm run local-dynamodb
+```
+OR manually:
+```bash
+docker run -p 8000:8000 amazon/dynamodb-local -jar DynamoDBLocal.jar -inMemory -sharedDb
 ```
 
-### Install nodejs18 use NVM
+#### 2. Create TaskTable in DynamoDB Local
 
 ```bash
-nvm install 18
-nvm use 18
+chmod +x ./scripts/createTable.sh
+./scripts/createTable.sh
 ```
 
-### Modify `template.yaml` to reflect the Function
+#### 3. Run Local API Server (Express)
 
-1. Change LambdaFunction Resource Name to reflect the function name
-2. Change APIGateway Resource Name to reflect the APIGateway name
-3. Fill in the dots and TODO items with the correct values
-
-```yaml
-Resources:
-  TODO_FUNCTIONNAME
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./dist
-      Handler: index.handler
-      Runtime: nodejs18.x
-      FunctionName: ...............................
-      Environment:
-        Variables:
-          ENVIRONMENT: staging
-          IS_SECRET_REMOTE: true
-          IS_CONFIG_REMOTE: false
-          SECRET_SOME_SECRET: /path/to/secrets.............................
-      Events:
-        TODO_REPLACE_TestEvent:
-          Type: Api
-          Properties:
-            Path: /test
-            Method: POST
-            RestApiId:
-              Ref: TODO_GATEWAYNAME
-      VpcConfig:
-        SecurityGroupIds: [.............................]
-        SubnetIds: [.............................]
-    Metadata:
-      SamResourceId: TODO_FUNCTIONNAME
-
-  TODO_GATEWAYNAME:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: staging
-      EndpointConfiguration:
-        Type: REGIONAL
-    Metadata:
-      SamResourceId: TODO_GATEWAYNAME
-
+```bash
+npm run dev
 ```
 
-## Developing locally
+#### 4. Schedule a Task
 
-### Invoking function locally through local API Gateway
-
-1. Build the Lambda Function with `sam build`
-2. Run the Lambda Function locally with `sam local start-api`, All defined endpoints in `template.yaml` will be available at `http://localhost:3000/`
-
-#### Speeding up development
-
-1. On one terminal, run `sam local start-api`
-2. One another terminal, run `sam build` on every time you make changes to the code. (There are no `--watch` options for `sam build` yet )
-
-### Invoking function via `start.js`
-
-1. Update `.env` file to reflect the environment variables within `template.yaml`
-2. When invoking with `start.js`, the function does not need to be built
-3. Modify the event in `events/test.json` to reflect the event you want to test
-4. Run `node start.js` to invoke the function
-
-## Deploying to AWS
-
-### Deployment on the first time
-
-```yaml
-npm run build && sam build && sam deploy --guided
+```bash
+curl -X POST http://localhost:3000/schedule-task \
+  -H "Content-Type: application/json" \
+  -d '{
+        "action": "webhook",
+        "payload": {
+          "url": "https://example.com/notify",
+          "data": { "message": "Hello local!" }
+        },
+        "run_at": "2025-06-10T15:00:00Z"
+      }'
 ```
 
-### Subsequent Deployments
+---
 
-```yaml
-npm run build && sam build && sam deploy
+### 🧪 Option 2: Run With AWS SAM Locally
+
+#### 1. Build SAM project
+
+```bash
+sam build
 ```
+
+#### 2. Start API Gateway locally
+
+```bash
+sam local start-api
+```
+
+Then test at:  
+`http://localhost:3000/schedule-task`
+
+---
+
+## ☁️ Deploying to AWS
+
+### 🔰 First Time
+
+```bash
+sam build && sam deploy --guided
+```
+
+You will be prompted to:
+- Enter stack name
+- Set AWS region
+- Set capabilities
+- Save these settings for future deploys
+
+### 🔁 Subsequent Deploys
+
+```bash
+sam build && sam deploy
+```
+
+---
+
+## 🧪 Testing Locally with `start.js`
+
+- `start.js` sets up a simple Express server for local endpoint testing.
+- Uses `IS_OFFLINE=true` to connect to local DynamoDB.
+- Use this for fast development without AWS infrastructure.
+
+---
+
+## 🔍 Health Check (Optional)
+
+You can add a health endpoint to `start.js`:
+```js
+app.get('/health', async (req, res) => {
+  try {
+    await app.db.scan({ TableName: process.env.TASK_TABLE_NAME }).promise();
+    res.status(200).json({ status: 'ok' });
+  } catch (err) {
+    res.status(500).json({ error: 'DynamoDB not reachable', detail: err.message });
+  }
+});
+```
+
+---
+
+## 🧼 Environment Variables
+
+| Variable           | Usage                          | Required for |
+|--------------------|--------------------------------|--------------|
+| `TASK_TABLE_NAME`  | Name of the DynamoDB table     | ALL          |
+| `AWS_REGION`       | AWS region (default: `us-east-1`) | AWS / Local |
+| `IS_OFFLINE`       | Set to `true` for local testing | Local only   |
+| `EXECUTE_TASK_FUNCTION` | ARN or name of executor lambda | Scheduler Lambda |
+
+---
+
+## 📦 NPM Scripts
+
+```json
+"scripts": {
+  "dev": "IS_OFFLINE=true node start.js",
+  "local-dynamodb": "docker-compose up"
+}
+```
+
+---
+
+## 📂 Sample Event (for testing manually)
+
+```json
+{
+  "action": "webhook",
+  "payload": {
+    "url": "https://example.com/notify",
+    "data": {
+      "message": "This is your scheduled task!"
+    }
+  },
+  "run_at": "2025-06-10T15:00:00Z"
+}
+```
+
+---
+
+## ✅ TODOs & Bonus Ideas
+
+- [ ] Add recurrence support (`daily`, `weekly`)
+- [ ] Add `GET /tasks` to list scheduled tasks
+- [ ] Add task status tracking dashboard (React or simple CLI)
+- [ ] Add SNS/email notifications on failure/completion
+
+---
+
+## 🧠 Notes
+
+- Uses AWS SDK v2 — production safe but under maintenance.
+- AWS SDK v3 migration is optional but encouraged over time.
+- Lightweight Express server makes development fast and easy.
+
+---
+
+Built with ❤️ for scalable task scheduling in a serverless world.

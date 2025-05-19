@@ -1,19 +1,33 @@
-import { handler } from "./dist/index.js";
-import fs from "fs";
+const express = require('express');
+const bodyParser = require('body-parser');
 
-// Read and parse JSON file
-const data = JSON.parse(fs.readFileSync("./events/test.json"));
-const event = {
-  ...data,
-  body: JSON.stringify(data.body),
-};
+const app = express();
+const port = 3000;
 
-const context = {};
+app.use(bodyParser.json());
 
-const callback = (response) => {
-  console.log(response, "Callback triggered");
-};
+const index = require('./index');   // Your main Lambda entry
 
-handler(event, context, callback)
-  .then((response) => console.log({ response }, "All done"))
-  .catch((err) => console.log(err, "Something went wrong"));
+app.post('/schedule-task', async (req, res) => {
+    console.log({ body: req.body, headers: req.headers }, 'Received request');
+
+    const event = {
+        headers: req.headers,
+        body: JSON.stringify(req.body)
+    };
+
+    try {
+        // 🟢 Call your Lambda function's api handler
+        const response = await index.api(event);
+
+        console.log(response, 'Lambda executed');
+        res.status(response.statusCode || 200).json(JSON.parse(response.body));
+    } catch (err) {
+        console.error(err, 'Error executing Lambda function');
+        res.status(500).json({ message: 'Internal server error', error: err.toString() });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Local server listening on port ${port}`);
+});

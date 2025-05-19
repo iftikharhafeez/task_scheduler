@@ -1,48 +1,20 @@
 {
-  "name": "node_lambda_function_template",
+  "name": "serverless-task-scheduler",
   "version": "1.0.0",
-  "description": "Template repository for lambda functions written in typescript",
+  "description": "Serverless Task Scheduler with layered architecture",
   "main": "start.js",
-  "type": "module",
   "scripts": {
-    "build": "rm -rf ./dist/ && tsc && tsc-alias && cp -R ./types ./dist/ && cp -R ./constants ./dist/",
     "start": "node start.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "IS_OFFLINE=true node start.js",
+    "local-dynamodb": "docker-compose up"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Hypercare/node_lambda_function_template.git"
-  },
-  "author": "Umar Azhar",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Hypercare/node_lambda_function_template/issues"
-  },
-  "homepage": "https://github.com/Hypercare/node_lambda_function_template#readme",
   "dependencies": {
-    "@hapi/joi": "^17.1.1",
-    "@hapi/wreck": "^17.0.0",
-    "@hypercare/hypercare-api-node-sdk": "^2.0.0",
-    "@hypercare/nodejs-dbconnector": "^3.0.1",
-    "@hypercare/nodejs-aws": "^2.2.0",
-    "aws-sdk": "^2.93.0",
-    "dotenv": "^8.2.0",
-    "got": "^12.6.0",
-    "lodash": "^4.17.15",
-    "moment": "^2.29.1",
-    "moment-timezone": "^0.5.43",
-    "os": "^0.1.2",
-    "pino": "^8.14.1",
-    "pino-lambda": "^4.2.1",
-    "pino-pretty": "^10.0.0",
-    "tslib": "^2.6.1",
-    "uuid": "^9.0.0"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.14.195",
-    "@types/moment-timezone": "^0.5.30",
-    "@types/node": "^20.4.8",
-    "tsc-alias": "^1.8.7",
-    "typescript": "^5.2.2"
+    "aws-sdk": "^2.1300.0",
+    "axios": "^1.5.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.21.2",
+    "uuid": "^9.0.0",
+    "dotenv": "^16.0.0"
   }
 }
