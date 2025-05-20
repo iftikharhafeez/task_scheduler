@@ -1,11 +1,8 @@
 {
-  "path": "/test",
-  "queryStringParameters": {
-      "organizationId": 1
+  "action": "webhook",
+  "payload": {
+    "url": "https://example.com/notify",
+    "data": { "message": "Hello local!" }
   },
-  "headers": {
-      "hc-timezone": "America/Toronto",
-      "hypercare-scope": "eyJvcmdhbml6YXRpb25JZCI6MX0=",
-      "Authorization": "Bearer 8b8e9cda7fe516313416142de9a04ca7307202a6"
-  }
+  "run_at": "2025-06-10T15:00:00Z"
 }
