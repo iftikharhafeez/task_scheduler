@@ -9,8 +9,4 @@ default:
       confirm_changeset: true
       capabilities: CAPABILITY_IAM
       disable_rollback: true
-      parameter_overrides: 
-        - HCLambdaExecutionRoleARN=arn:aws:iam::893204061704:role/HCBasicLambdaExecution
-        - ENVIRONMENT=staging
-        - SecurityGroupIDs=sg-062bf1dacc3f51804
-        - SubnetIDs=subnet-01a0ebecc7abda8b5,subnet-0efc676b4b1c5f016
+
