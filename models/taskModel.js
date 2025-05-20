@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-const TABLE_NAME = process.env.TASK_TABLE_NAME;
+const TABLE_NAME = "TaskTable";
 
 class TaskModel {
     constructor(db) {

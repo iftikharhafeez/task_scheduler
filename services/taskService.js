@@ -1,4 +1,7 @@
 const TaskModel = require('../models/taskModel');
+const dotenv = require('dotenv');
+const env = require('../lib/environment');
+const envConfig = env.getConfig();
 
 class TaskService {
     constructor(db, logger) {
@@ -13,11 +16,18 @@ class TaskService {
     async findAndRunDueTasks(lambdaClient) {
         const tasks = await this.taskModel.getDueTasks();
         for (const task of tasks) {
-            await lambdaClient.invoke({
-                FunctionName: process.env.EXECUTE_TASK_FUNCTION,
-                InvocationType: 'Event',
-                Payload: JSON.stringify({ task })
-            }).promise();
+            if (process.env.IS_OFFLINE === 'true') {
+                // invoke locally
+                const { executorHandler } = require('../handlers/executorHandler');
+                await executorHandler({ task }, require('../index').app);
+            } else {
+                // invoke real AWS Lambda
+                await lambdaClient.invoke({
+                    FunctionName: process.env.EXECUTE_TASK_FUNCTION,
+                    InvocationType: 'Event',
+                    Payload: JSON.stringify({ task })
+                }).promise();
+}
 
             await this.taskModel.updateTaskStatus(task.task_id, 'running');
         }

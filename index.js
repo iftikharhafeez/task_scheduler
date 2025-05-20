@@ -8,3 +8,4 @@ const app = initApp();
 exports.api = async (event) => apiHandler(event, app);
 exports.scheduler = async (event) => schedulerHandler(event, app);
 exports.executor = async (event) => executorHandler(event, app);
+exports.app = app;
